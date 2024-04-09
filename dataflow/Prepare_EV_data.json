@@ -66,10 +66,11 @@
 				"     lateral: true) ~> groupByPivot",
 				"groupByPivot sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     filePattern:'ev_data_[n]',",
+				"     partitionFileNames:[(concat('EV/',toString(currentTimestamp(),'yyyy-MM-dd_HH:mm','ev_data'),'.csv'))],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     saveOrder: 1) ~> finalData"
+				"     saveOrder: 1,",
+				"     partitionBy('hash', 1)) ~> finalData"
 			]
 		}
 	}
