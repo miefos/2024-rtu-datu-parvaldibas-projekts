@@ -1,5 +1,5 @@
 {
-	"name": "EV_transpose_and_format",
+	"name": "Prepare_EV_data",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
