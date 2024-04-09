@@ -1,5 +1,5 @@
 {
-	"name": "dataflow1",
+	"name": "EV_transpose_and_format",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
