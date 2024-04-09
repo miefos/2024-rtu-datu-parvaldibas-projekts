@@ -16,6 +16,59 @@
 			},
 			"firstRowAsHeader": true
 		},
-		"schema": []
+		"schema": [
+			{
+				"name": "year",
+				"type": "String"
+			},
+			{
+				"name": "el_auto_registr",
+				"type": "String"
+			},
+			{
+				"name": "benzina_auto_registr",
+				"type": "String"
+			},
+			{
+				"name": "dizela_auto registr",
+				"type": "String"
+			},
+			{
+				"name": "benzina_cena_yearly _avg",
+				"type": "String"
+			},
+			{
+				"name": "iedziv_skaits_gada_sak",
+				"type": "String"
+			},
+			{
+				"name": "IKP_uz_1_iedz",
+				"type": "String"
+			},
+			{
+				"name": "vid_aritm_men_ienak",
+				"type": "String"
+			},
+			{
+				"name": "visp_apmier_ar_dzivi",
+				"type": "String"
+			},
+			{
+				"name": "pas_parvad_tramv_Riga",
+				"type": "String"
+			},
+			{
+				"name": "pas_parvad_trol_Riga",
+				"type": "String"
+			},
+			{
+				"name": "pas_parv_vilc",
+				"type": "String"
+			},
+			{
+				"name": "el_cena_kWh_max",
+				"type": "String"
+			}
+		]
 	}
 }

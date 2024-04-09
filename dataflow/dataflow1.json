@@ -15,7 +15,22 @@
 			"sinks": [],
 			"transformations": [],
 			"scriptLines": [
-				"source(allowSchemaDrift: true,",
+				"source(output(",
+				"          year as string,",
+				"          el_auto_registr as string,",
+				"          benzina_auto_registr as string,",
+				"          {dizela_auto registr} as string,",
+				"          {benzina_cena_yearly _avg} as string,",
+				"          iedziv_skaits_gada_sak as string,",
+				"          IKP_uz_1_iedz as string,",
+				"          vid_aritm_men_ienak as string,",
+				"          visp_apmier_ar_dzivi as string,",
+				"          pas_parvad_tramv_Riga as string,",
+				"          pas_parvad_trol_Riga as string,",
+				"          pas_parv_vilc as string,",
+				"          el_cena_kWh_max as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> source1"
 			]
