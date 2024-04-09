@@ -13,7 +13,8 @@
 				"type": "AzureBlobStorageLocation",
 				"fileName": "data_prepared.xlsx",
 				"container": "rawdata"
-			}
+			},
+			"firstRowAsHeader": true
 		},
 		"schema": []
 	}
