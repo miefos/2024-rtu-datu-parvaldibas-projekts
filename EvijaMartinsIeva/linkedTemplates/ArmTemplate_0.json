@@ -1,0 +1,351 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "EvijaMartinsIeva"
+		},
+		"AzureBlobStorage1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureBlobStorage1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureBlobStorage1_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/FinalData')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "finaldata"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/RawData')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Excel",
+				"typeProperties": {
+					"sheetName": "Sheet1",
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "data_prepared.xlsx",
+						"container": "rawdata"
+					},
+					"firstRowAsHeader": true
+				},
+				"schema": [
+					{
+						"name": "year",
+						"type": "String"
+					},
+					{
+						"name": "el_auto_registr",
+						"type": "String"
+					},
+					{
+						"name": "benzina_auto_registr",
+						"type": "String"
+					},
+					{
+						"name": "dizela_auto registr",
+						"type": "String"
+					},
+					{
+						"name": "benzina_cena_yearly _avg",
+						"type": "String"
+					},
+					{
+						"name": "iedziv_skaits_gada_sak",
+						"type": "String"
+					},
+					{
+						"name": "IKP_uz_1_iedz",
+						"type": "String"
+					},
+					{
+						"name": "vid_aritm_men_ienak",
+						"type": "String"
+					},
+					{
+						"name": "visp_apmier_ar_dzivi",
+						"type": "String"
+					},
+					{
+						"name": "pas_parvad_tramv_Riga",
+						"type": "String"
+					},
+					{
+						"name": "pas_parvad_trol_Riga",
+						"type": "String"
+					},
+					{
+						"name": "pas_parv_vilc",
+						"type": "String"
+					},
+					{
+						"name": "el_cena_kWh_max",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Prepare_EV_data')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "RawData",
+								"type": "DatasetReference"
+							},
+							"name": "rawData"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "FinalData",
+								"type": "DatasetReference"
+							},
+							"name": "finalData"
+						}
+					],
+					"transformations": [
+						{
+							"name": "groupByUnpivot"
+						},
+						{
+							"name": "formatNumbers"
+						},
+						{
+							"name": "groupByPivot"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          year as string,",
+						"          el_auto_registr as string,",
+						"          benzina_auto_registr as string,",
+						"          {dizela_auto registr} as string,",
+						"          {benzina_cena_yearly _avg} as string,",
+						"          iedziv_skaits_gada_sak as string,",
+						"          IKP_uz_1_iedz as string,",
+						"          vid_aritm_men_ienak as string,",
+						"          visp_apmier_ar_dzivi as string,",
+						"          pas_parvad_tramv_Riga as string,",
+						"          pas_parvad_trol_Riga as string,",
+						"          pas_parv_vilc as string,",
+						"          el_cena_kWh_max as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> rawData",
+						"rawData unpivot(output(",
+						"          {Mainīgais} as string,",
+						"          {Vērtība} as string",
+						"     ),",
+						"     ungroupBy(year),",
+						"     lateral: false,",
+						"     ignoreNullPivots: false) ~> groupByUnpivot",
+						"groupByUnpivot derive({Vērtība} = toDouble(replace(replace({Vērtība}, ',', ''), ' ', ''))) ~> formatNumbers",
+						"formatNumbers pivot(groupBy({Mainīgais}),",
+						"     pivotBy(year),",
+						"     {} = first({Vērtība}),",
+						"     columnNaming: '$N$V',",
+						"     lateral: true) ~> groupByPivot",
+						"groupByPivot sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> finalData"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/RawData')]",
+				"[concat(variables('factoryId'), '/datasets/FinalData')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/powerquery1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "WranglingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"name": "RawData",
+							"script": "source(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> RawData",
+							"dataset": {
+								"referenceName": "RawData",
+								"type": "DatasetReference"
+							}
+						}
+					],
+					"script": "section Section1;\r\nshared RawData = let AdfDoc = AzureStorage.BlobContents(\"https://evijamartinsieva.blob.core.windows.net/rawdata/data_prepared.xlsx\"), Excel = Excel.Workbook(AdfDoc),ExcelSheet = Excel{[Item=\"Sheet1\",Kind=\"Sheet\"]}[Data], PromotedHeaders = Table.PromoteHeaders(ExcelSheet, [PromoteAllScalars = true]) in PromotedHeaders;\r\nshared UserQuery = let Source = #\"RawData\",\r\n  #\"Replaced value\" = Table.ReplaceValue(Source, \",\", \".\", Replacer.ReplaceValue, {\"year\"}),\r\n  #\"Replaced value 1\" = Table.ReplaceValue(#\"Replaced value\", \" \", \"\", Replacer.ReplaceValue, {\"year\"}),\r\n  #\"Replaced value 2\" = Table.ReplaceValue(#\"Replaced value 1\", \".\", \",\", Replacer.ReplaceValue, {\"year\", \"el_auto_registr\", \"benzina_auto_registr\", \"dizela_auto registr\", \"benzina_cena_yearly _avg\", \"iedziv_skaits_gada_sak\", \"IKP_uz_1_iedz\", \"vid_aritm_men_ienak\", \"visp_apmier_ar_dzivi\", \"pas_parvad_tramv_Riga\", \"pas_parvad_trol_Riga\"}),\r\n  #\"Replaced value 3\" = Table.ReplaceValue(#\"Replaced value 2\", \" \", \"\", Replacer.ReplaceValue, {\"year\", \"el_auto_registr\", \"benzina_auto_registr\", \"dizela_auto registr\", \"benzina_cena_yearly _avg\", \"iedziv_skaits_gada_sak\", \"IKP_uz_1_iedz\", \"vid_aritm_men_ienak\", \"visp_apmier_ar_dzivi\", \"pas_parvad_tramv_Riga\", \"pas_parvad_trol_Riga\"}),\r\n  #\"Replaced value 4\" = Table.ReplaceValue(#\"Replaced value 3\", \",\", \".\", Replacer.ReplaceText, {\"pas_parv_vilc\"}),\r\n  #\"Replaced value 5\" = Table.ReplaceValue(#\"Replaced value 4\", \" \", \"\", Replacer.ReplaceValue, {\"pas_parvad_trol_Riga\"}) in #\"Replaced value 5\";\r\n",
+					"documentLocale": "en-us"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/RawData')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/EV_pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "tests_nokopet_failu_uz_finaldata",
+						"type": "Copy",
+						"state": "Inactive",
+						"onInactiveMarkAs": "Succeeded",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "ExcelSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "RawData",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "FinalData",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Prepare EV data",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Prepare_EV_data",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"rawData": {},
+									"finalData": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/RawData')]",
+				"[concat(variables('factoryId'), '/datasets/FinalData')]",
+				"[concat(variables('factoryId'), '/dataflows/Prepare_EV_data')]"
+			]
+		}
+	]
+}
