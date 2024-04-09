@@ -10,6 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
+				"folderPath": "ev_data",
 				"container": "finaldata"
 			},
 			"columnDelimiter": ",",
