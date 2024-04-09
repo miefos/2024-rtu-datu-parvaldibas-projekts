@@ -76,7 +76,7 @@
 				")],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     partitionBy('hash', 1)) ~> finalData"
+				"     saveOrder: 1) ~> finalData"
 			]
 		}
 	}
