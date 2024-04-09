@@ -43,6 +43,7 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobStorageLocation",
+						"folderPath": "ev_data",
 						"container": "finaldata"
 					},
 					"columnDelimiter": ",",
@@ -205,8 +206,11 @@
 						"     lateral: true) ~> groupByPivot",
 						"groupByPivot sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
+						"     partitionFileNames:[(concat('EV/',toString(currentTimestamp(),'yyyy_MM_dd_HH_mm','ev_data'),'.csv'))],",
 						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> finalData"
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
+						"     partitionBy('hash', 1)) ~> finalData"
 					]
 				}
 			},
@@ -238,6 +242,63 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/RawData')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "RawData",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "FinalData",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          year as string,",
+						"          el_auto_registr as string,",
+						"          benzina_auto_registr as string,",
+						"          {dizela_auto registr} as string,",
+						"          {benzina_cena_yearly _avg} as string,",
+						"          iedziv_skaits_gada_sak as string,",
+						"          IKP_uz_1_iedz as string,",
+						"          vid_aritm_men_ienak as string,",
+						"          visp_apmier_ar_dzivi as string,",
+						"          pas_parvad_tramv_Riga as string,",
+						"          pas_parvad_trol_Riga as string,",
+						"          pas_parv_vilc as string,",
+						"          el_cena_kWh_max as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source1",
+						"source1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/RawData')]",
+				"[concat(variables('factoryId'), '/datasets/FinalData')]"
 			]
 		},
 		{
@@ -325,14 +386,18 @@
 								"datasetParameters": {
 									"rawData": {},
 									"finalData": {}
-								}
+								},
+								"linkedServiceParameters": {}
 							},
 							"staging": {},
 							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
+								"coreCount": 32,
+								"computeType": "MemoryOptimized"
 							},
-							"traceLevel": "Fine"
+							"traceLevel": "None",
+							"cacheSinks": {
+								"firstRowOnly": true
+							}
 						}
 					}
 				],
@@ -345,6 +410,52 @@
 				"[concat(variables('factoryId'), '/datasets/RawData')]",
 				"[concat(variables('factoryId'), '/datasets/FinalData')]",
 				"[concat(variables('factoryId'), '/dataflows/Prepare_EV_data')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow1",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 16,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflow1')]"
 			]
 		}
 	]
