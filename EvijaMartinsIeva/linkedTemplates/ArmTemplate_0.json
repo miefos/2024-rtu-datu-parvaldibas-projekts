@@ -206,7 +206,7 @@
 						"     lateral: true) ~> groupByPivot",
 						"groupByPivot sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
-						"     partitionFileNames:[(concat('EV/',toString(currentTimestamp(),'yyyy_MM_dd_HH_mm','ev_data'),'.csv'))],",
+						"     partitionFileNames:[(concat(toString(currentTimestamp(),'yyyy_MM_dd_HH_mm_','ev_data'),'.csv'))],",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     saveOrder: 1,",
@@ -217,31 +217,6 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/RawData')]",
 				"[concat(variables('factoryId'), '/datasets/FinalData')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/powerquery1')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "WranglingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"name": "RawData",
-							"script": "source(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> RawData",
-							"dataset": {
-								"referenceName": "RawData",
-								"type": "DatasetReference"
-							}
-						}
-					],
-					"script": "section Section1;\r\nshared RawData = let AdfDoc = AzureStorage.BlobContents(\"https://evijamartinsieva.blob.core.windows.net/rawdata/data_prepared.xlsx\"), Excel = Excel.Workbook(AdfDoc),ExcelSheet = Excel{[Item=\"Sheet1\",Kind=\"Sheet\"]}[Data], PromotedHeaders = Table.PromoteHeaders(ExcelSheet, [PromoteAllScalars = true]) in PromotedHeaders;\r\nshared UserQuery = let Source = #\"RawData\",\r\n  #\"Replaced value\" = Table.ReplaceValue(Source, \",\", \".\", Replacer.ReplaceValue, {\"year\"}),\r\n  #\"Replaced value 1\" = Table.ReplaceValue(#\"Replaced value\", \" \", \"\", Replacer.ReplaceValue, {\"year\"}),\r\n  #\"Replaced value 2\" = Table.ReplaceValue(#\"Replaced value 1\", \".\", \",\", Replacer.ReplaceValue, {\"year\", \"el_auto_registr\", \"benzina_auto_registr\", \"dizela_auto registr\", \"benzina_cena_yearly _avg\", \"iedziv_skaits_gada_sak\", \"IKP_uz_1_iedz\", \"vid_aritm_men_ienak\", \"visp_apmier_ar_dzivi\", \"pas_parvad_tramv_Riga\", \"pas_parvad_trol_Riga\"}),\r\n  #\"Replaced value 3\" = Table.ReplaceValue(#\"Replaced value 2\", \" \", \"\", Replacer.ReplaceValue, {\"year\", \"el_auto_registr\", \"benzina_auto_registr\", \"dizela_auto registr\", \"benzina_cena_yearly _avg\", \"iedziv_skaits_gada_sak\", \"IKP_uz_1_iedz\", \"vid_aritm_men_ienak\", \"visp_apmier_ar_dzivi\", \"pas_parvad_tramv_Riga\", \"pas_parvad_trol_Riga\"}),\r\n  #\"Replaced value 4\" = Table.ReplaceValue(#\"Replaced value 3\", \",\", \".\", Replacer.ReplaceText, {\"pas_parv_vilc\"}),\r\n  #\"Replaced value 5\" = Table.ReplaceValue(#\"Replaced value 4\", \" \", \"\", Replacer.ReplaceValue, {\"pas_parvad_trol_Riga\"}) in #\"Replaced value 5\";\r\n",
-					"documentLocale": "en-us"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/RawData')]"
 			]
 		},
 		{
@@ -299,6 +274,31 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/RawData')]",
 				"[concat(variables('factoryId'), '/datasets/FinalData')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/powerquery1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "WranglingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"name": "RawData",
+							"script": "source(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> RawData",
+							"dataset": {
+								"referenceName": "RawData",
+								"type": "DatasetReference"
+							}
+						}
+					],
+					"script": "section Section1;\r\nshared RawData = let AdfDoc = AzureStorage.BlobContents(\"https://evijamartinsieva.blob.core.windows.net/rawdata/data_prepared.xlsx\"), Excel = Excel.Workbook(AdfDoc),ExcelSheet = Excel{[Item=\"Sheet1\",Kind=\"Sheet\"]}[Data], PromotedHeaders = Table.PromoteHeaders(ExcelSheet, [PromoteAllScalars = true]) in PromotedHeaders;\r\nshared UserQuery = let Source = #\"RawData\",\r\n  #\"Replaced value\" = Table.ReplaceValue(Source, \",\", \".\", Replacer.ReplaceValue, {\"year\"}),\r\n  #\"Replaced value 1\" = Table.ReplaceValue(#\"Replaced value\", \" \", \"\", Replacer.ReplaceValue, {\"year\"}),\r\n  #\"Replaced value 2\" = Table.ReplaceValue(#\"Replaced value 1\", \".\", \",\", Replacer.ReplaceValue, {\"year\", \"el_auto_registr\", \"benzina_auto_registr\", \"dizela_auto registr\", \"benzina_cena_yearly _avg\", \"iedziv_skaits_gada_sak\", \"IKP_uz_1_iedz\", \"vid_aritm_men_ienak\", \"visp_apmier_ar_dzivi\", \"pas_parvad_tramv_Riga\", \"pas_parvad_trol_Riga\"}),\r\n  #\"Replaced value 3\" = Table.ReplaceValue(#\"Replaced value 2\", \" \", \"\", Replacer.ReplaceValue, {\"year\", \"el_auto_registr\", \"benzina_auto_registr\", \"dizela_auto registr\", \"benzina_cena_yearly _avg\", \"iedziv_skaits_gada_sak\", \"IKP_uz_1_iedz\", \"vid_aritm_men_ienak\", \"visp_apmier_ar_dzivi\", \"pas_parvad_tramv_Riga\", \"pas_parvad_trol_Riga\"}),\r\n  #\"Replaced value 4\" = Table.ReplaceValue(#\"Replaced value 3\", \",\", \".\", Replacer.ReplaceText, {\"pas_parv_vilc\"}),\r\n  #\"Replaced value 5\" = Table.ReplaceValue(#\"Replaced value 4\", \" \", \"\", Replacer.ReplaceValue, {\"pas_parvad_trol_Riga\"}) in #\"Replaced value 5\";\r\n",
+					"documentLocale": "en-us"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/RawData')]"
 			]
 		},
 		{
@@ -386,8 +386,7 @@
 								"datasetParameters": {
 									"rawData": {},
 									"finalData": {}
-								},
-								"linkedServiceParameters": {}
+								}
 							},
 							"staging": {},
 							"compute": {
