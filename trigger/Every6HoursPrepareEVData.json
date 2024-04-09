@@ -1,0 +1,25 @@
+{
+	"name": "Every6HoursPrepareEVData",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "EV_pipeline",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Hour",
+				"interval": 6,
+				"startTime": "2024-04-09T19:19:00",
+				"endTime": "2024-04-10T20:19:00",
+				"timeZone": "FLE Standard Time"
+			}
+		}
+	}
+}
