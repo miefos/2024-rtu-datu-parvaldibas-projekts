@@ -27,6 +27,9 @@
 				},
 				{
 					"name": "numberFormatting"
+				},
+				{
+					"name": "groupingData"
 				}
 			],
 			"scriptLines": [
@@ -56,7 +59,12 @@
 				"     lateral: false,",
 				"     ignoreNullPivots: false) ~> ungroupingUnpivot",
 				"ungroupingUnpivot derive({Vērtība} = toDouble(replace(replace({Vērtība}, ',', ''), ' ', ''))) ~> numberFormatting",
-				"numberFormatting sink(allowSchemaDrift: true,",
+				"numberFormatting pivot(groupBy({Mainīgais}),",
+				"     pivotBy(year),",
+				"     {} = first({Vērtība}),",
+				"     columnNaming: '$N$V',",
+				"     lateral: true) ~> groupingData",
+				"groupingData sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> dataSaving"
