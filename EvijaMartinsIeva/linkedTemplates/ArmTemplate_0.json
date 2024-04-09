@@ -456,6 +456,37 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/dataflow1')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Every6HoursPrepareEVData')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "EV_pipeline",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Hour",
+						"interval": 6,
+						"startTime": "2024-04-09T19:19:00",
+						"endTime": "2024-04-10T20:19:00",
+						"timeZone": "FLE Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/EV_pipeline')]"
+			]
 		}
 	]
 }
