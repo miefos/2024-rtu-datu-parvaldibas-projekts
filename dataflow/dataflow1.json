@@ -12,10 +12,21 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "FinalData",
+						"type": "DatasetReference"
+					},
+					"name": "dataSaving"
+				}
+			],
 			"transformations": [
 				{
-					"name": "unpivot1"
+					"name": "ungroupingUnpivot"
+				},
+				{
+					"name": "numberFormatting"
 				}
 			],
 			"scriptLines": [
@@ -43,7 +54,12 @@
 				"     ),",
 				"     ungroupBy(year),",
 				"     lateral: false,",
-				"     ignoreNullPivots: false) ~> unpivot1"
+				"     ignoreNullPivots: false) ~> ungroupingUnpivot",
+				"ungroupingUnpivot derive({Vērtība} = toDouble(replace(replace({Vērtība}, ',', ''), ' ', ''))) ~> numberFormatting",
+				"numberFormatting sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> dataSaving"
 			]
 		}
 	}
