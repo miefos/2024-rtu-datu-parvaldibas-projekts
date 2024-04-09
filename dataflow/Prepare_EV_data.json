@@ -66,7 +66,7 @@
 				"     lateral: true) ~> groupByPivot",
 				"groupByPivot sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     partitionFileNames:[(concat('EV/',toString(currentTimestamp(),'yyyy-MM-dd_HH:mm','ev_data'),'.csv'))],",
+				"     partitionFileNames:[(concat('EV/',toString(currentTimestamp(),'yyyy_MM_dd_HH_mm','ev_data'),'.csv'))],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     saveOrder: 1,",
