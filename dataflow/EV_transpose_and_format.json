@@ -9,7 +9,7 @@
 						"referenceName": "RawData",
 						"type": "DatasetReference"
 					},
-					"name": "source1"
+					"name": "rawData"
 				}
 			],
 			"sinks": [
@@ -18,18 +18,18 @@
 						"referenceName": "FinalData",
 						"type": "DatasetReference"
 					},
-					"name": "dataSaving"
+					"name": "finalData"
 				}
 			],
 			"transformations": [
 				{
-					"name": "ungroupingUnpivot"
+					"name": "groupByUnpivot"
 				},
 				{
-					"name": "numberFormatting"
+					"name": "formatNumbers"
 				},
 				{
-					"name": "groupingData"
+					"name": "groupByPivot"
 				}
 			],
 			"scriptLines": [
@@ -50,24 +50,24 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     ignoreNoFilesFound: false) ~> source1",
-				"source1 unpivot(output(",
+				"     ignoreNoFilesFound: false) ~> rawData",
+				"rawData unpivot(output(",
 				"          {Mainīgais} as string,",
 				"          {Vērtība} as string",
 				"     ),",
 				"     ungroupBy(year),",
 				"     lateral: false,",
-				"     ignoreNullPivots: false) ~> ungroupingUnpivot",
-				"ungroupingUnpivot derive({Vērtība} = toDouble(replace(replace({Vērtība}, ',', ''), ' ', ''))) ~> numberFormatting",
-				"numberFormatting pivot(groupBy({Mainīgais}),",
+				"     ignoreNullPivots: false) ~> groupByUnpivot",
+				"groupByUnpivot derive({Vērtība} = toDouble(replace(replace({Vērtība}, ',', ''), ' ', ''))) ~> formatNumbers",
+				"formatNumbers pivot(groupBy({Mainīgais}),",
 				"     pivotBy(year),",
 				"     {} = first({Vērtība}),",
 				"     columnNaming: '$N$V',",
-				"     lateral: true) ~> groupingData",
-				"groupingData sink(allowSchemaDrift: true,",
+				"     lateral: true) ~> groupByPivot",
+				"groupByPivot sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> dataSaving"
+				"     skipDuplicateMapOutputs: true) ~> finalData"
 			]
 		}
 	}
