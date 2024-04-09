@@ -66,8 +66,17 @@
 				"     lateral: true) ~> groupByPivot",
 				"groupByPivot sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     partitionFileNames:[(concat(substring(toString(currentUTC()), 0, 4), '-',  ",
+				"       substring(toString(currentUTC()), 5, 2), '-', ",
+				"       substring(toString(currentUTC()), 8, 2), ' ',",
+				"       substring(toString(currentUTC()), 11, 2), ':', ",
+				"       substring(toString(currentUTC()), 14, 2), ':',  ",
+				"       substring(toString(currentUTC()), 17, 2),",
+				"       '_ev_data')",
+				")],",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> finalData"
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> finalData"
 			]
 		}
 	}
