@@ -5,6 +5,8 @@
 			{
 				"name": "tests_nokopet_failu_uz_finaldata",
 				"type": "Copy",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
